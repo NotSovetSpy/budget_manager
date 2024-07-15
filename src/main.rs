@@ -1,5 +1,5 @@
 use budget_manager::run;
-use crossterm::event::{EnableMouseCapture, Event};
+use crossterm::event::EnableMouseCapture;
 use crossterm::execute;
 use crossterm::terminal::{enable_raw_mode, Clear, ClearType, EnterAlternateScreen, SetTitle};
 use tui::{backend::CrosstermBackend, Terminal};
