@@ -3,8 +3,10 @@ use crossterm::event::EnableMouseCapture;
 use crossterm::execute;
 use crossterm::terminal::{enable_raw_mode, Clear, ClearType, EnterAlternateScreen, SetTitle};
 use tui::{backend::CrosstermBackend, Terminal};
+use tokio;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Setup terminal
     enable_raw_mode()?;
     let mut stdout = std::io::stdout();
