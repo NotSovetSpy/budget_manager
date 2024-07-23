@@ -1,9 +1,8 @@
+use super::widgets::{bar, chunks, content, menu, tabs};
+use super::MenuPointer;
 use tui::style::{Color, Modifier, Style};
-use tui::text::Spans;
 use tui::{
     backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout},
-    widgets::{BarChart, Block, Borders, List, ListItem, Tabs},
     Terminal,
 };
 
@@ -13,69 +12,67 @@ impl Painter {
     pub fn draw(
         &self,
         terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
+        menu_pointer: &MenuPointer,
     ) -> Result<(), Box<dyn std::error::Error>> {
         terminal.draw(|frame| {
             let size = frame.size();
 
-            // Main chunks, 3 rows
-            let main_chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints(
-                    [
-                        Constraint::Percentage(15),
-                        Constraint::Percentage(60),
-                        Constraint::Percentage(20),
-                    ]
-                    .as_ref(),
-                )
-                .split(size);
+            // Selected theme
+            let (tabs_select_style, content_select_style, menu_select_style, bar_select_style) =
+                self.selected_style(menu_pointer);
 
-            // Split middle row into 2 columns
-            let middle_chunks = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints([Constraint::Percentage(70), Constraint::Percentage(30)].as_ref())
-                .split(main_chunks[1]);
+            // Widgets theme
+            let tabs_style = Style::default().fg(Color::White);
+            let content_style = Style::default().fg(Color::White);
+            let menu_style = Style::default().fg(Color::White);
+            let bar_style = Style::default().fg(Color::White);
 
+            // Placeholders for the blocks
+            let tabs = tabs::create(tabs_select_style, tabs_style);
+            let content = content::create(content_select_style, content_style);
+            let menu = menu::create(menu_select_style, menu_style);
+            let bar = bar::create(bar_select_style, bar_style);
+            
+            // Creating chunks
+            let (main_chunks, middle_chunks) = chunks::create(size);
             let tabs_chunk = main_chunks[0];
             let bar_chunk = main_chunks[2];
             let content_chunk = middle_chunks[0];
-            let menu_chunk = middle_chunks[1];
+            let menu_chunk = middle_chunks[1];   
 
-            // Placeholders for the blocks
-            let titles = ["Tab1", "Tab2", "Tab3", "Tab4"]
-                .iter()
-                .cloned()
-                .map(Spans::from)
-                .collect();
-            let tabs =
-                Tabs::new(titles).block(Block::default().title("Tabs").borders(Borders::ALL));
-
-            let list_items = [
-                ListItem::new("Item 1"),
-                ListItem::new("Item 2"),
-                ListItem::new("Item 3"),
-            ];
-            let content = List::new(list_items.clone())
-                .block(Block::default().title("Transactions").borders(Borders::ALL));
-
-            let menu = List::new(list_items.clone())
-                .block(Block::default().title("Menu").borders(Borders::ALL));
-
-            let bar = BarChart::default()
-                .block(Block::default().title("BarChart").borders(Borders::ALL))
-                .bar_width(3)
-                .bar_gap(1)
-                .bar_style(Style::default().fg(Color::Yellow).bg(Color::Red))
-                .value_style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD))
-                .label_style(Style::default().fg(Color::White))
-                .data(&[("B0", 0), ("B1", 2), ("B2", 4), ("B3", 3)])
-                .max(4);
-
+            // Render the widgets
             frame.render_widget(tabs, tabs_chunk);
             frame.render_widget(content, content_chunk);
             frame.render_widget(menu, menu_chunk);
             frame.render_widget(bar, bar_chunk);
         })?;
         Ok(())
+    }
+
+    fn selected_style(&self, pointer: &MenuPointer) -> (Style, Style, Style, Style) {
+        let mut tabs_style = Style::default();
+        let mut content_style = Style::default();
+        let mut menu_style = Style::default();
+        let mut bar_style = Style::default();
+
+        if pointer.is_tabs_selected() {
+            tabs_style = Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD);
+        } else if pointer.is_content_selected() {
+            content_style = Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD);
+        } else if pointer.is_menu_selected() {
+            menu_style = Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD);
+        } else if pointer.is_bar_selected() {
+            bar_style = Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD);
+        }
+
+        (tabs_style, content_style, menu_style, bar_style)
     }
 }
