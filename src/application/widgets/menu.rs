@@ -6,7 +6,7 @@ pub fn create<'a>(block_style: Style, menu_style: Style) -> List<'a> {
     List::new(list_items.clone())
         .block(
             Block::default()
-                .title("Transactions")
+                .title("Menu")
                 .borders(Borders::ALL)
                 .style(block_style),
         )
